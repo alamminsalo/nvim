@@ -3,13 +3,27 @@ call plug#begin('~/.local/share/nvim/plugged')
 
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'pangloss/vim-javascript', { 'for': ['javascript'] }
-Plug 'gavocanov/vim-js-indent', { 'for': ['javascript'] }
+" Plug 'gavocanov/vim-js-indent', { 'for': ['javascript'] }
 Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
-Plug 'vim-syntastic/syntastic', { 'do': 'npm install -g jshint' }
+" Plug 'vim-syntastic/syntastic', { 'do': 'npm install -g jshint' }
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'vim-airline/vim-airline'
-Plug 'morhetz/gruvbox'
-
+Plug 'bling/vim-airline'
+Plug 'rust-lang/rust.vim'
+Plug 'OmniSharp/omnisharp-vim'
+Plug 'Robzz/deoplete-omnisharp'
+Plug 'tpope/vim-dispatch'
+Plug 'ervandew/supertab'
+Plug 'tpope/vim-surround'
+Plug 'w0rp/ale', { 'do': 'npm install -g jshint' }
+Plug 'rafi/awesome-vim-colorschemes'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'scrooloose/nerdtree'
+Plug 'fatih/vim-go'
+Plug 'jodosha/vim-godebug'
+Plug 'nsf/gocode'
+Plug 'zchee/deoplete-go'
+Plug 'ayu-theme/ayu-vim'
+Plug 'maksimr/vim-jsbeautify'
 
 call plug#end()
 
@@ -18,12 +32,13 @@ call deoplete#enable()
 let g:deoplete#enable_at_startup=1
 
 filetype plugin indent on
+filetype plugin on
 
 " formatting
 set nocompatible
 set relativenumber
 set number
-" set cursorline
+set cursorline
 "set smartindent
 set sw=2
 syntax enable
@@ -31,25 +46,16 @@ syntax enable
 "set listchars=tab:>\ 
 set t_Co=256
 
-" For Neovim 0.1.3 and 0.1.4
-let $NVIM_TUI_ENABLE_TRUE_COLOR=1
-
-" True color support
-set termguicolors
-
-colorscheme gruvbox
-set background=dark
-
 " Fuzz search
-set path+=**
-set wildmenu
+" set path+=**
+" set wildmenu
 
 " vimgrep next mappings
 map <silent> <S-Right> :cnext<CR>
 map <silent> <S-Left> :cprevious<CR>
 
 " Tern
-let g:tern_request_timeout = 2
+let g:tern_request_timeout = 1
 let g:tern_show_signature_in_pum = '0'
 let g:tern#filetypes = [ 'jsx', 'javascript.jsx', 'vue', 'qml' ]
 let g:tern_show_argument_hints='on_hold'
@@ -71,24 +77,31 @@ endif
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#buffer_idx_mode = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
-let g:airline#extensions#tabline#left_sep = ''
-let g:airline#extensions#tabline#left_alt_sep = ''
-let g:airline#extensions#tabline#right_sep = ''
-let g:airline#extensions#tabline#right_alt_sep = ''
-let g:airline_left_sep = ''
-let g:airline_left_alt_sep = ''
-let g:airline_right_sep = ''
-let g:airline_right_alt_sep = ''
-let g:airline_symbols.branch = ''
-let g:airline_symbols.readonly = ''
-let g:airline_symbols.linenr = ''
-let g:airline_theme= 'gruvbox'
 
 " Use tabbing
 autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 let g:UltiSnipsExpandTrigger="<C-j>"
-inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
-let g:ctrlp_prompt_mappings = {
-    \ 'AcceptSelection("e")': ['<c-t>'],
-    \ 'AcceptSelection("t")': ['<cr>', '<2-LeftMouse>'],
-    \ }
+"inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+"let g:ctrlp_prompt_mappings = {}
+"let g:ctrlp_custom_ignore = 'node_modules\|bower_components\|git\|dist\|www'
+let g:ctrlp_custom_ignore = 'node_modules\|bower_components\|dist\|www'
+
+"let g:OmniSharp_selector_ui = 'ctrlp'  " Use ctrlp.vim
+
+set termguicolors
+
+colorscheme ayu
+" let g:airline_theme = 'ayu'
+set background=dark
+
+" Open tree files in new tab
+"let NERDTreeMapOpenInTab='<ENTER>'
+
+nnoremap <Tab> :bn<CR>
+nnoremap <S-Tab> :bp<CR>
+
+map <silent> <S-C-N> :NERDTree<CR>
+
+" autocmd VimEnter * NERDTree
+set encoding=utf-8  " The encoding displayed.
+set fileencoding=utf-8  " The encoding written to file.
