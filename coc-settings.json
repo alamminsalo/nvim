@@ -1,0 +1,16 @@
+{
+  "languageserver": {
+    "golang": {
+      "command": "gopls",
+      "rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
+      "filetypes": ["go"]
+    }
+  },
+  "java": {
+    "home": "/usr/lib/jvm/java-11"
+  },
+  "python": {
+    "interpreter": "/usr/bin/python",
+    "jediEnabled": false
+  }
+}
