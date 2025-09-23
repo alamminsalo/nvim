@@ -1,16 +1,22 @@
 {
+  "java":{
+    "compile.nullAnalysis.mode": "automatic"
+  },
+  "rust-analyzer.server.path": "/Users/anttilamminsalo/.cargo/bin/rust-analyzer",
   "languageserver": {
-    "golang": {
-      "command": "gopls",
-      "rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
-      "filetypes": ["go"]
+    "rust": {
+      "command": "rust-analyzer",
+      "filetypes": ["rust"],
+      "rootPatterns": ["Cargo.toml"],
     }
   },
-  "java": {
-    "home": "/usr/lib/jvm/java-11"
-  },
-  "python": {
-    "interpreter": "/usr/bin/python",
-    "jediEnabled": false
-  }
+  "coc.preferences.formatOnSaveFiletypes": [
+    "css",
+    "javascript",
+    "markdown",
+    "typescript",
+    "typescriptreact",
+    "javascriptreact"
+  ],
+  "svelte.enable-ts-plugin": true
 }
