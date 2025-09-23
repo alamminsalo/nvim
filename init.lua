@@ -33,9 +33,6 @@ vim.opt.sw = 2
 -- Plugins
 -- =========================
 require("lazy").setup({
-  -- Essentials
-  { "evanleck/vim-svelte" },
-
   -- Telescope & dependencies
   { "nvim-lua/plenary.nvim" },
   { "nvim-telescope/telescope.nvim", version = "0.1.8", cmd = "Telescope" },
