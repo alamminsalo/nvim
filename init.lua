@@ -1,175 +1,209 @@
-local vimrc = vim.fn.stdpath("config") .. "/vimrc.vim"
-vim.cmd.source(vimrc)
-
-vim.opt.termguicolors = true
-require("bufferline").setup({})
-
-require('lualine-config')--.setup({})
-
--- Mini.vim
-require('mini.indentscope').setup({
-    delay = 0,
-    draw = {
-      animation = function()
-        return 0
-      end,
-    }
+-- =========================
+-- Bootstrap lazy.nvim
+-- =========================
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
   })
---require('mini.completion').setup({})
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- =========================
+-- Leader key
+-- =========================
+vim.g.mapleader = " "
+vim.g.maplocalleader = ","
+
+-- =========================
+-- Basic Neovim options
+-- =========================
+vim.opt.termguicolors = true
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.signcolumn = "yes"
+vim.opt.sw = 2
+
+-- =========================
+-- Plugins
+-- =========================
+require("lazy").setup({
+  -- Essentials
+  { "evanleck/vim-svelte" },
+
+  -- Telescope & dependencies
+  { "nvim-lua/plenary.nvim" },
+  { "nvim-telescope/telescope.nvim", version = "0.1.8", cmd = "Telescope" },
+
+  -- Treesitter & LSP
+  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", event = "BufReadPre" },
+  "neovim/nvim-lspconfig",
+  "williamboman/mason.nvim",
+  "williamboman/mason-lspconfig.nvim",
+
+  -- UI
+  "nvim-tree/nvim-web-devicons",
+  { "akinsho/bufferline.nvim", version = "*", event = "BufReadPre" },
+  "nvim-lualine/lualine.nvim",
+
+  -- Theme
+  { 
+    "baliestri/aura-theme", 
+    lazy = false, 
+    priority = 1000,
+    config = function(plugin)
+      vim.opt.rtp:append(plugin.dir .. "/packages/neovim")
+      vim.cmd([[colorscheme aura-dark]])
+    end
+  },
+
+  -- LLM
+  "olimorris/codecompanion.nvim",
+
+  -- Completion
+  "hrsh7th/nvim-cmp",
+  "hrsh7th/cmp-nvim-lsp",
+  "hrsh7th/cmp-buffer",
+  "hrsh7th/cmp-path",
+  "hrsh7th/cmp-cmdline",
+
+  -- Rust
+  "mrcjkb/rustaceanvim",
+
+  -- Mini.nvim
+  { "nvim-mini/mini.nvim", branch = "main" },
+})
+
+-- =========================
+-- Bufferline & Lualine
+-- =========================
+require("bufferline").setup({})
+require("lualine-config")
+
+-- =========================
+-- Mini.nvim modules
+-- =========================
+require('mini.indentscope').setup({
+  draw = { delay = 0, animation = require('mini.indentscope').gen_animation.none(), priority = 50 },
+  symbol = '│',
+  options = { try_as_border = true },
+})
 require('mini.pairs').setup({})
 require('mini.snippets').setup({})
-
-require('codecompanion').setup({
-		strategies = {
-			chat = {
-				adapter = {
-					name = 'ollama',
-					model = 'deepseek-coder-v2:latest',
-				},
-			},
-			inline = {
-        adapter = {
-					name = 'ollama',
-					model = 'qwen2.5-coder:14b',
-				},
-				keymaps = {
-					accept_change = {
-						modes = { n = "ca" },
-					},
-					reject_change = {
-						modes = { n = "cr" },
-						opts = { nowait = true },
-					},
-				}
-			},
-		},
-		--display = {
-		--	diff = {
-		--		enabled = false,
-		--	}
-		--}
-    opts = {
-      placement = "replace" -- "new"|"replace"|"add"|"before"|"chat"
-    },
-	})
-
--- Mason setup
-require('mason').setup({})
-require('mason-lspconfig').setup({
-  handlers = {
-    function(server_name)
-      require("lspconfig")[server_name].setup {
-        capabilities = require("cmp_nvim_lsp").default_capabilities(),
-      }
-    end,
-
-    -- Custom config for Lua
-    ["lua_ls"] = function()
-      require("lspconfig").lua_ls.setup {
-        capabilities = require("cmp_nvim_lsp").default_capabilities(),
-        settings = {
-          Lua = {
-            diagnostics = {
-              globals = { "vim" },
-            },
-          },
-        },
-      }
-    end,
+require('mini.surround').setup({
+  mappings = {
+    add = "sa",
+    delete = "sd",
+    find = "sf",
+    find_left = "sF",
+    highlight = "sh",
+    replace = "sr",
+    update_n_lines = "sn"
   },
 })
 
+-- =========================
+-- CodeCompanion (LLM)
+-- =========================
+require('codecompanion').setup({
+  strategies = {
+    chat = { adapter = { name = 'ollama', model = 'deepseek-coder-v2:latest' } },
+    inline = {
+      adapter = { name = 'ollama', model = 'qwen2.5-coder:14b' },
+      keymaps = {
+        accept_change = { modes = { n = "ca" } },
+        reject_change = { modes = { n = "cr" }, opts = { nowait = true } },
+      }
+    },
+  },
+  opts = { placement = "replace" }
+})
 
+-- =========================
+-- Mason + LSP setup
+-- =========================
+require('mason').setup()
+require('mason-lspconfig').setup({ ensure_installed = { "lua_ls", "pyright", "rust_analyzer", "tsserver" } })
+
+local lspconfig = require("lspconfig")
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+local servers = { "pyright", "rust_analyzer", "tsserver", "lua_ls" }
+for _, lsp in ipairs(servers) do
+  if lsp == "lua_ls" then
+    lspconfig[lsp].setup {
+      capabilities = capabilities,
+      settings = { Lua = { diagnostics = { globals = { "vim" } } } },
+    }
+  else
+    lspconfig[lsp].setup { capabilities = capabilities }
+  end
+end
+
+-- =========================
+-- nvim-cmp + mini.snippets
+-- =========================
 local cmp = require('cmp')
 cmp.setup({
-	snippet = {
-      -- REQUIRED - you must specify a snippet engine
-      expand = function(args)
-        --vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-        -- vim.snippet.expand(args.body) -- For native neovim snippets (Neovim v0.10+)
-
-        -- For `mini.snippets` users:
-        local insert = MiniSnippets.config.expand.insert or MiniSnippets.default_insert
-        insert({ body = args.body }) -- Insert at cursor
-        cmp.resubscribe({ "TextChangedI", "TextChangedP" })
-        require("cmp.config").set_onetime({ sources = {} })
-      end,
-    },
-    window = {
-      -- completion = cmp.config.window.bordered(),
-      -- documentation = cmp.config.window.bordered(),
-    },
-    mapping = cmp.mapping.preset.insert({
-      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-      ['<C-f>'] = cmp.mapping.scroll_docs(4),
-      ['<C-Space>'] = cmp.mapping.complete(),
-      ['<C-e>'] = cmp.mapping.abort(),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-      ['<Tab>'] = cmp.mapping(
-        function(fallback)
-          if cmp.visible() then
-            cmp.select_next_item()
-          else
-            fallback()
-          end
-        end, { "i", "s" }
-      ),
-      ['<S-Tab>'] = cmp.mapping(
-        function(fallback)
-          if cmp.visible() then
-            cmp.select_prev_item()
-          else
-            fallback()
-          end
-        end, { "i", "s" }
-      ),
-    }),
-    sources = cmp.config.sources({
-      { name = 'nvim_lsp' },
-      --{ name = 'vsnip' }, -- For vsnip users.
-      -- { name = 'luasnip' }, -- For luasnip users.
-      -- { name = 'ultisnips' }, -- For ultisnips users.
-      -- { name = 'snippy' }, -- For snippy users.
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-require('nvim-treesitter.configs').setup {
-  indent = { enable = true },
-  highlight = { enable = true },
-  ensure_installed = {
-    'vim',
-    'lua',
-    'python',
-    'markdown',
-    'markdown_inline',
-    'python',
-    'typescript',
-    'javascript',
-    'go',
-    'rust',
+  snippet = {
+    expand = function(args)
+      local insert = MiniSnippets.config.expand.insert or MiniSnippets.default_insert
+      insert({ body = args.body })
+    end,
   },
+  mapping = cmp.mapping.preset.insert({
+    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    ['<Tab>'] = cmp.mapping(function(fallback) if cmp.visible() then cmp.select_next_item() else fallback() end end, { "i", "s" }),
+    ['<S-Tab>'] = cmp.mapping(function(fallback) if cmp.visible() then cmp.select_prev_item() else fallback() end end, { "i", "s" }),
+  }),
+  sources = cmp.config.sources({ { name = 'nvim_lsp' } }, { { name = 'buffer' } }),
+})
+
+-- =========================
+-- Treesitter
+-- =========================
+require('nvim-treesitter.configs').setup({
+  highlight = { enable = true },
+  indent = { enable = true },
+  ensure_installed = { "vim", "lua", "python", "markdown", "typescript", "javascript", "go", "rust" },
   sync_install = false,
   auto_install = true,
+})
+
+-- =========================
+-- Telescope keymaps
+-- =========================
+local builtin = require('telescope.builtin')
+vim.keymap.set('n', '<leader>f', builtin.find_files, { desc = "Find files" })
+vim.keymap.set('n', '<leader>g', builtin.live_grep, { desc = "Live grep" })
+vim.keymap.set('n', '<leader>b', builtin.buffers, { desc = "Buffers" })
+vim.keymap.set('n', '<leader>h', builtin.help_tags, { desc = "Help tags" })
+vim.keymap.set('n', '<leader>p', builtin.git_files, { desc = "Git files" })
+
+-- =========================
+-- Other keymaps
+-- =========================
+vim.keymap.set("n", "<Tab>", "<cmd>bn<CR>", { silent = true })
+vim.keymap.set("n", "<S-Tab>", "<cmd>bp<CR>", { silent = true })
+
+local lsp_keymaps = {
+  gD = vim.lsp.buf.declaration,
+  gd = vim.lsp.buf.definition,
+  K = vim.lsp.buf.hover,
+  ["<leader>rn"] = vim.lsp.buf.rename,
+  ["<leader>ca"] = vim.lsp.buf.code_action,
 }
 
--- keymaps
-vim.g.mapleader = ','
--- tab cycles buffers
-vim.keymap.set("n", "<Tab>", "<cmd>:bn<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<S-Tab>", "<cmd>:bp<CR>", { noremap = true, silent = true })
--- jump to declaration/definition
-vim.keymap.set("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", { noremap = true, silent = true })
-
-local builtin = require('telescope.builtin')
-
--- Keymaps
-vim.keymap.set('n', '<leader>p', builtin.git_files, {})
-vim.keymap.set('n', '<leader>o', builtin.live_grep, {})
-vim.keymap.set('n', '<leader>f', builtin.find_files, {})
+for k, v in pairs(lsp_keymaps) do
+  vim.keymap.set("n", k, v, { silent = true })
+end
 
