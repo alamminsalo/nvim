@@ -1,8 +1,0 @@
-**/tags
-**/target/
-**/classes/
-**/*.min.js
-**/node_modules/
-**/bower_components/
-**/*.cache.*
-**/*.class
