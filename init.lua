@@ -72,6 +72,10 @@ require("lazy").setup({
 	"hrsh7th/cmp-path",
 	"hrsh7th/cmp-cmdline",
 
+	-- Pairs / Tags
+	{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
+	"windwp/nvim-ts-autotag",
+
 	-- Mini.nvim
 	{ "nvim-mini/mini.nvim", branch = "main" },
 })
@@ -82,10 +86,37 @@ require("lazy").setup({
 vim.cmd.colorscheme("aura-dark")
 
 -- =========================
+-- Mason + LSP setup
+-- =========================
+local servers = { "lua_ls", "pyright", "tsserver", "rust_analyzer" }
+
+require("mason").setup()
+require("mason-lspconfig").setup({ ensure_installed = servers })
+
+local lspconfig = require("lspconfig")
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+for _, lsp in ipairs(servers) do
+	if lsp == "lua_ls" then
+		lspconfig[lsp].setup({
+			capabilities = capabilities,
+			settings = { Lua = { diagnostics = { globals = { "vim" } } } },
+		})
+	else
+		lspconfig[lsp].setup({ capabilities = capabilities })
+	end
+end
+
+-- =========================
 -- Bufferline & Lualine
 -- =========================
 require("bufferline").setup({})
 require("lualine-config")
+
+-- =========================
+-- Pairs and autotag
+-- =========================
+require("nvim-ts-autotag").setup()
 
 -- =========================
 -- Mini.nvim modules
@@ -95,7 +126,6 @@ require("mini.indentscope").setup({
 	symbol = "│",
 	options = { try_as_border = true },
 })
-require("mini.pairs").setup({})
 require("mini.git").setup({})
 require("mini.snippets").setup({})
 require("mini.surround").setup({
@@ -126,28 +156,6 @@ require("codecompanion").setup({
 	},
 	opts = { placement = "replace" },
 })
-
--- =========================
--- Mason + LSP setup
--- =========================
-local servers = { "lua_ls", "pyright", "tsserver", "rust_analyzer" }
-
-require("mason").setup()
-require("mason-lspconfig").setup({ ensure_installed = servers })
-
-local lspconfig = require("lspconfig")
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
-for _, lsp in ipairs(servers) do
-	if lsp == "lua_ls" then
-		lspconfig[lsp].setup({
-			capabilities = capabilities,
-			settings = { Lua = { diagnostics = { globals = { "vim" } } } },
-		})
-	else
-		lspconfig[lsp].setup({ capabilities = capabilities })
-	end
-end
 
 -- =========================
 -- nvim-cmp + mini.snippets
@@ -204,7 +212,7 @@ vim.g.maplocalleader = ","
 -- =========================
 -- Basic Neovim options
 -- =========================
---vim.opt.termguicolors = true
+vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.signcolumn = "yes"
