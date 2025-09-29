@@ -23,8 +23,8 @@ require("lazy").setup({
 	{ "nvim-telescope/telescope.nvim", version = "0.1.8", cmd = "Telescope" },
 
 	-- Treesitter & LSP
-	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", event = "BufReadPre" },
 	"neovim/nvim-lspconfig",
+	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", event = "BufReadPre" },
 	"williamboman/mason.nvim",
 	"williamboman/mason-lspconfig.nvim",
 	{
@@ -88,22 +88,20 @@ vim.cmd.colorscheme("aura-dark")
 -- =========================
 -- Mason + LSP setup
 -- =========================
-local servers = { "lua_ls", "pyright", "tsserver", "rust_analyzer" }
+local servers = { "lua_ls", "pyright", "ts_ls", "rust_analyzer" }
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 require("mason").setup()
 require("mason-lspconfig").setup({ ensure_installed = servers })
 
-local lspconfig = require("lspconfig")
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
 for _, lsp in ipairs(servers) do
 	if lsp == "lua_ls" then
-		lspconfig[lsp].setup({
+		vim.lsp.config(lsp, {
 			capabilities = capabilities,
-			settings = { Lua = { diagnostics = { globals = { "vim" } } } },
+			settings = { Lua = { runtime = { version = "LuaJIT" }, diagnostics = { globals = { "vim", "require" } } } },
 		})
 	else
-		lspconfig[lsp].setup({ capabilities = capabilities })
+		vim.lsp.config(lsp, { capabilities = capabilities })
 	end
 end
 
