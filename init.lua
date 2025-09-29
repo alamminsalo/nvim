@@ -34,7 +34,7 @@ require("lazy").setup({
 				lua = { "stylua" },
 				sql = { "sleek" },
 				python = {
-					"ruff_fix",
+					--"ruff_fix",
 					"ruff_format",
 					"ruff_organize_imports",
 				},
@@ -206,8 +206,8 @@ require("nvim-treesitter.configs").setup({
 -- =========================
 -- Leader key
 -- =========================
-vim.g.mapleader = " "
-vim.g.maplocalleader = ","
+vim.g.mapleader = ","
+--vim.g.maplocalleader = ","
 
 -- =========================
 -- Basic Neovim options
@@ -222,11 +222,11 @@ vim.opt.sw = 2
 -- Telescope keymaps
 -- =========================
 local builtin = require("telescope.builtin")
-vim.keymap.set("n", "<leader>f", builtin.find_files, { desc = "Find files" })
-vim.keymap.set("n", "<leader>g", builtin.live_grep, { desc = "Live grep" })
+vim.keymap.set("n", "<leader>p", builtin.find_files, { desc = "Find files" })
+vim.keymap.set("n", "<leader>o", builtin.live_grep, { desc = "Live grep" })
 vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Buffers" })
 vim.keymap.set("n", "<leader>h", builtin.help_tags, { desc = "Help tags" })
-vim.keymap.set("n", "<leader>p", builtin.git_files, { desc = "Git files" })
+vim.keymap.set("n", "<leader>l", builtin.git_files, { desc = "Git files" })
 
 -- =========================
 -- Other keymaps
